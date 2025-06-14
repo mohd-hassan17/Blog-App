@@ -4,10 +4,12 @@ import React, { Suspense } from "react"
 import { TopArticles } from "@/components/home/top-articles";
 import { Button } from "@/components/ui/button";
 import { BlogFooter } from "@/components/home/blog-footer";
+import DashboardLoadingScreen from "../loading";
 
 
 export default function Home() {
   return (
+    <>
    <main>
       <HeroSection />
       <section className="relative py-16 md:py-24">
@@ -22,7 +24,7 @@ export default function Home() {
           </div>
 
           {/* Top Articles */}
-          <Suspense fallback={<h1>Loading....</h1>}>
+          <Suspense fallback={<DashboardLoadingScreen />}>
             <TopArticles/>
           </Suspense>
 
@@ -30,7 +32,7 @@ export default function Home() {
             <Link href={"/articles"}>
               <Button
                 variant="outline"
-                className="rounded-full px-8 py-6 text-lg hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900"
+                className="rounded-full px-8 py-6 text-lg hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 cursor-pointer"
               >
                 View All Articles
               </Button>
@@ -40,6 +42,7 @@ export default function Home() {
       </section>
       <BlogFooter />
     </main>
+    </>
   );
 }
 

@@ -11,22 +11,44 @@ import {
   TableRow,
 } from "../ui/table";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
+import { Prisma } from "@/app/generated/prisma";
+import { deleteArticle } from "@/actions/delete-article";
+import EditArticleButton from "./EditArticleButton";
 
-const RecentArticles = () => {
+type RecentArticlesProps = {
+  articles: Prisma.ArticlesGetPayload<{
+    include: {
+      comments: true;
+      author: {
+        select: {
+          name: true;
+          email: true;
+          imageUrl: true;
+        };
+      };
+    };
+  }>[];
+};
+
+
+const RecentArticles: React.FC<RecentArticlesProps> = ({articles}) => {
     return(
   <Card className="mb-8">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Recent Articles</CardTitle>
-          <Button variant="ghost" size="sm" className="text-muted-foreground">
+          <Link href={"/articles"}> 
+          <Button  variant="ghost" size="sm" className="text-muted-foreground cursor-pointer">
             View All →
-          </Button>
+          </Button></Link>
+         
         </div>
       </CardHeader>
-     
-        <CardContent>No articles found.</CardContent>
-   
-        <CardContent>
+
+      {!articles.length ? <CardContent className="flex items-center text-center justify-center text-lg">No articles found.</CardContent> : 
+      
+       <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
@@ -39,29 +61,30 @@ const RecentArticles = () => {
             </TableHeader>
             <TableBody>
            
-                <TableRow >
-                  <TableCell className="font-medium">title</TableCell>
+            {articles.map((article) => (
+           
+            
+                <TableRow key={article.id}>
+                  <TableCell className="font-medium">{article.title}</TableCell>
                   <TableCell>
                     <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
                       Published
                     </span> 
                   </TableCell>
-                  <TableCell>comments.length</TableCell>
-                  <TableCell>new Date</TableCell>
+                  <TableCell>{article.comments.length}</TableCell>
+                  <TableCell>{new Date(article.createdAt).toDateString()}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Link href={`/dashboard/articles/${123}/edit`}>
-                        <Button variant="ghost" size="sm" className="bg-gray-800  text-white">Edit</Button>
-                      </Link>
-                      <DeleteButton  />
+                     <EditArticleButton articleId={article.id}/>
+                      <DeleteButton  articleId={article.id}/>
                     </div>
                   </TableCell>
                 </TableRow>
-             
+             ))}
             </TableBody>
           </Table>
         </CardContent>
-      
+      }
     </Card>
     )
 }
@@ -69,15 +92,24 @@ const RecentArticles = () => {
 export default RecentArticles;
 
 
+type deleteButtonProps ={
+  articleId: string
+}
 
-const DeleteButton= () => {
+const DeleteButton= ({articleId}: deleteButtonProps) => {
+
+  const [isPending, startTransition] = useTransition();
 
   return (
-    <form
-     
-    >
-      <Button  variant="ghost" size="sm" type="submit" className="bg-gray-800">
-      Delete
+    <form  action={() =>
+        startTransition(async () => {
+          await deleteArticle(articleId);
+        })
+      }>
+      <Button disabled={isPending} variant="ghost" size="sm" type="submit" className="text-white bg-gray-800 cursor-pointer">
+               {isPending? <Loader2 className="mr-2 h-4 w-3 animate-spin" /> : "Delete"}
+                             
+
       </Button>
     </form>
   );

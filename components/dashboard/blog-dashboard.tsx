@@ -4,11 +4,27 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import RecentArticles from "./recent-articles";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import CreateArticleButton from "./CreateArticleButton";
 
 
-const BlogDashboard = () => {
-    return(
-         <main className="flex-1 p-4 sm:p-6 md:p-8">
+const BlogDashboard = async () => {
+
+  const [articles, totalComments] = await Promise.all([
+    prisma.articles.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        comments: true,
+        author: {
+          select: { name: true, email: true, imageUrl: true },
+        },
+      },
+    }),
+    prisma.comment.count(),
+  ]);
+
+
+  return (
+    <main className="flex-1 p-4 sm:p-6 md:p-8">
       {/* Header */}
       <div className="flex justify-between items-center flex-wrap gap-4 mb-8">
         <div>
@@ -17,16 +33,11 @@ const BlogDashboard = () => {
             Manage your content and analytics
           </p>
         </div>
-        <Link href={"/dashboard/articles/create"}>
-          <Button className="gap-2 cursor-pointer">
-            <PlusCircle className="h-4 w-4" />
-            New Article
-          </Button>
-        </Link>
+       <CreateArticleButton />
       </div>
 
       {/* Quick Stats */}
-  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-8">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-medium font-sm">
@@ -35,7 +46,7 @@ const BlogDashboard = () => {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">length</div> 
+            <div className="text-2xl font-bold">{articles.length}</div>
             <p className="text-xs text-muted-foreground mt-2">
               +5 from last month
             </p>
@@ -50,7 +61,7 @@ const BlogDashboard = () => {
             <MessageCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Comments</div>
+            <div className="text-2xl font-bold">{totalComments}</div>
             <p className="text-xs text-muted-foreground mt-2">
               12 awaiting moderation
             </p>
@@ -74,9 +85,9 @@ const BlogDashboard = () => {
       </div>
 
       {/* Recent Articles */}
-      <RecentArticles />
+      <RecentArticles articles={articles} />
     </main>
-    )
+  )
 }
 
 export default BlogDashboard;

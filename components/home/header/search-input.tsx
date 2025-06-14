@@ -1,22 +1,20 @@
 "use client";
-// import { searchAction } from "@/actions/search";
+
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React from "react";
-import { useState } from "react";
-
+import { searchAction } from "@/actions/search";
 
 const SearchInput = () => {
   const params = useSearchParams();
-    const [showInput, setShowInput] = useState(false);
 
   
   return (
-    <form>
+    <form action={searchAction}>
   <div className="relative">
     {/* 📱 Small devices */}
-    <div className="sm:hidden">
+    {/* <div className="sm:hidden">
       <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="search"
@@ -25,7 +23,7 @@ const SearchInput = () => {
         placeholder="Search.."
         className="pl-8 w-30 focus-visible:ring-1"
       />
-    </div>
+    </div> */}
 
     {/* 🖥️ Medium and up */}
     <div className="hidden sm:block">
